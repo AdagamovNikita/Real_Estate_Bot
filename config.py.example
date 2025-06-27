@@ -1,0 +1,14 @@
+# Пример конфигурационного файла
+# Скопируйте этот файл как config.py и заполните ваши данные
+
+# Telegram Bot Token (получите у @BotFather)
+TELEGRAM_BOT_TOKEN = "YOUR_BOT_TOKEN_HERE"
+
+# Настройки базы данных
+DATABASE_NAME = "ads.db"
+
+# Настройки пагинации
+ITEMS_PER_PAGE = 10
+
+# Большие города для пагинации
+BIG_CITIES = ['лимассол', 'пафос', 'ларнака', 'limassol', 'paphos', 'larnaca'] 
