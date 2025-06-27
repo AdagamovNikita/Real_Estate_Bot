@@ -1,0 +1,7 @@
+telethon
+requests
+python-dotenv
+transformers
+torch
+sqlite3-api
+python-telegram-bot>=20.0 
