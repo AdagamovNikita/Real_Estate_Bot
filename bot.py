@@ -216,7 +216,8 @@ async def process_search(update, context):
         else:
             # Для маленьких городов показываем все сразу
             await send_all_results(update, context, results)
-            return ConversationHandler.END
+            # КРИТИЧНО: Остаёмся в состоянии SEARCH_RESULTS для работы кнопок
+            return SEARCH_RESULTS
             
     except sqlite3.Error as e:
         logger.error(f"Database error: {e}")
@@ -377,24 +378,47 @@ async def handle_pagination(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     if query.data.startswith("next_"):
         page_num = int(query.data.split("_")[1])
         context.user_data[PAGE] = page_num
-        await send_paginated_results(update, context, page_num)
+        # Создаем объект update с message вместо callback_query для send_paginated_results
+        class MockUpdate:
+            def __init__(self, message):
+                self.message = message
+        
+        mock_update = MockUpdate(query.message)
+        await send_paginated_results(mock_update, context, page_num)
         return SEARCH_RESULTS
     elif query.data == "new_search":
+        # Clear user data and start new search
         context.user_data.clear()
-        await query.edit_message_text("🔍 Начинаем новый поиск!")
         
+        # Обновляем исходное сообщение
+        try:
+            await query.edit_message_text("🔍 Начинаем новый поиск!")
+        except:
+            pass
+        
+        # Отправляем новое сообщение с кнопками выбора типа сделки
         keyboard = [
             [InlineKeyboardButton("🏠 Аренда", callback_data='rent')],
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
-        await query.message.reply_text(
-            'Выберите тип сделки:',
+        await context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text='Выберите тип сделки:',
             reply_markup=reply_markup
         )
         return DEAL_TYPE
     elif query.data == "end":
-        await query.edit_message_text("👋 Спасибо за использование бота! До свидания!")
+        # End conversation
+        context.user_data.clear()
+        
+        try:
+            await query.edit_message_text("👋 До свидания! Для нового поиска используйте команду /start")
+        except:
+            await context.bot.send_message(
+                chat_id=query.message.chat_id,
+                text="👋 До свидания! Для нового поиска используйте команду /start"
+            )
         return ConversationHandler.END
     
     return SEARCH_RESULTS
