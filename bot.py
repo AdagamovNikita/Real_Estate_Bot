@@ -21,7 +21,7 @@ try:
     from config import TELEGRAM_BOT_TOKEN
     TOKEN = TELEGRAM_BOT_TOKEN
 except ImportError:
-    TOKEN = "7555815142:AAHy-gudCxhKIs07RyEc8esG9qHOcLm8EbA"
+    TOKEN = ""
 
 # Enable logging
 logging.basicConfig(
