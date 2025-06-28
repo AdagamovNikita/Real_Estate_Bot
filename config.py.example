@@ -1,11 +1,23 @@
 # Пример конфигурационного файла
-# Скопируйте этот файл как config.py и заполните ваши данные
+# Скопируйте этот файл как config.py и заполните своими данными
 
-# Telegram Bot Token (получите у @BotFather)
-TELEGRAM_BOT_TOKEN = "YOUR_BOT_TOKEN_HERE"
+# Telegram API credentials
+API_ID = 'YOUR_API_ID'
+API_HASH = 'YOUR_API_HASH'
+API_KEY = 'YOUR_API_KEY'
 
-# Настройки базы данных
-DATABASE_NAME = "ads.db"
+# Telegram Bot settings
+TELEGRAM_BOT_TOKEN = 'YOUR_BOT_TOKEN'
+TELEGRAM_CHANNEL = 'https://t.me/kipr_arenda'
+
+# LLM settings
+LLM_MODEL = 'mistralai/mistral-7b-instruct'
+LLM_URL = 'https://api.openrouter.ai/api/v1/chat/completions'
+
+# File paths
+RAW_MESSAGES_FILE = 'messages.json'
+PARSED_MESSAGES_FILE = 'parsed_messages.json'
+DB_FILE = 'ads.db'
 
 # Настройки пагинации
 ITEMS_PER_PAGE = 10

@@ -16,12 +16,8 @@ from telegram.error import BadRequest, Conflict
 import sys
 import os
 
-# Попытка импорта из config.py, если не найден - используем захардкоженный токен
-try:
-    from config import TELEGRAM_BOT_TOKEN
-    TOKEN = TELEGRAM_BOT_TOKEN
-except ImportError:
-    TOKEN = "7555815142:AAHy-gudCxhKIs07RyEc8esG9qHOcLm8EbA"
+# Импорт токена из config.py
+TELEGRAM_BOT_TOKEN = '7555815142:AAHy-gudCxhKIs07RyEc8esG9qHOcLm8EbA'
 
 # Enable logging
 logging.basicConfig(
@@ -449,7 +445,7 @@ def main() -> None:
     """Run the bot."""
     try:
         # Создаем приложение с обработчиком ошибок
-        application = Application.builder().token(TOKEN).build()
+        application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
         
         # Добавляем обработчик ошибок
         application.add_error_handler(error_handler)

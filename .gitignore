@@ -151,4 +151,25 @@ check_*.py
 
 # OS
 .DS_Store
-Thumbs.db 
+Thumbs.db
+
+# Конфиденциальные файлы
+*.session
+*.session-journal
+
+# Кэш Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Виртуальное окружение
+venv/
+env/
+
+# JSON файлы с данными
+messages.json
+parsed_messages.json
+
+# IDE
+.vscode/
+.idea/ 
