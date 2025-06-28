@@ -12,7 +12,9 @@ from telegram.ext import (
     ConversationHandler,
     filters,
 )
-from telegram.error import BadRequest
+from telegram.error import BadRequest, Conflict
+import sys
+import os
 
 # Попытка импорта из config.py, если не найден - используем захардкоженный токен
 try:
@@ -23,7 +25,12 @@ except ImportError:
 
 # Enable logging
 logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", 
+    level=logging.INFO,
+    handlers=[
+        logging.FileHandler("bot.log"),
+        logging.StreamHandler(sys.stdout)
+    ]
 )
 logger = logging.getLogger(__name__)
 
@@ -121,7 +128,6 @@ async def process_search(update, context):
     """Выполняет поиск в базе данных и отправляет результаты."""
     try:
         # Проверяем наличие файла базы данных
-        import os
         if not os.path.exists('ads.db'):
             await update.message.reply_text("Ошибка: база данных не найдена.")
             return ConversationHandler.END
@@ -430,28 +436,45 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     )
     return ConversationHandler.END
 
+async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Обработчик ошибок."""
+    logger.error("Exception while handling an update:", exc_info=context.error)
+    
+    if isinstance(context.error, Conflict):
+        logger.error("Conflict error detected. Bot instance conflict.")
+        # Завершаем работу при конфликте
+        os._exit(1)
+
 def main() -> None:
     """Run the bot."""
-    application = Application.builder().token(TOKEN).build()
+    try:
+        # Создаем приложение с обработчиком ошибок
+        application = Application.builder().token(TOKEN).build()
+        
+        # Добавляем обработчик ошибок
+        application.add_error_handler(error_handler)
 
-    # Add conversation handler
-    conv_handler = ConversationHandler(
-        entry_points=[CommandHandler("start", start)],
-        states={
-            DEAL_TYPE: [CallbackQueryHandler(deal_type)],
-            LOCATION: [MessageHandler(filters.TEXT & ~filters.COMMAND, location)],
-            BUDGET: [MessageHandler(filters.TEXT & ~filters.COMMAND, budget)],
-            ROOMS: [MessageHandler(filters.TEXT & ~filters.COMMAND, rooms)],
-            SEARCH_RESULTS: [CallbackQueryHandler(handle_pagination)],
-        },
-        fallbacks=[CommandHandler("cancel", cancel)],
-        per_message=False,
-    )
+        # Add conversation handler
+        conv_handler = ConversationHandler(
+            entry_points=[CommandHandler("start", start)],
+            states={
+                DEAL_TYPE: [CallbackQueryHandler(deal_type)],
+                LOCATION: [MessageHandler(filters.TEXT & ~filters.COMMAND, location)],
+                BUDGET: [MessageHandler(filters.TEXT & ~filters.COMMAND, budget)],
+                ROOMS: [MessageHandler(filters.TEXT & ~filters.COMMAND, rooms)],
+                SEARCH_RESULTS: [CallbackQueryHandler(handle_pagination)],
+            },
+            fallbacks=[CommandHandler("cancel", cancel)],
+            per_message=False,
+        )
 
-    application.add_handler(conv_handler)
+        application.add_handler(conv_handler)
 
-    # Run the bot until the user presses Ctrl-C
-    application.run_polling(allowed_updates=Update.ALL_TYPES)
+        # Run the bot until the user presses Ctrl-C
+        application.run_polling(allowed_updates=Update.ALL_TYPES)
+    except Exception as e:
+        logger.error(f"Critical error: {e}", exc_info=True)
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
